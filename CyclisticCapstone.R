@@ -1,4 +1,4 @@
-##Find trip id's less than 2 minutes which leave and arrive at the same station
+##Find and remove trip id's less than 2 minutes which leave and arrive at the same station
 false_starts <- Q1234[Q1234$tripduration <120 & Q1234$from_station_id == Q1234$to_station_id, ]
 false_starts <- false_starts$trip_id
 true_rides_v1 <- Q1234[ ! Q1234$trip_id %in% false_starts, ]
@@ -65,14 +65,15 @@ ave(ride_sample$tripduration)
 
 ##seperating customer and subscriber tables for individual analysis
 sample_customers <- ride_sample[ride_sample$usertype == "Subscriber", ]
-  BSkyLoadRefresh("sample_customers")
+  BSkyLoadRefresh("sample_subscribers")
 
 sample_customers2 <- ride_sample[ride_sample$usertype == "Customer", ]
-  BSkyLoadRefresh("sample_customers2")
+  BSkyLoadRefresh("sample_customers")
 
-##
+##removing data points not indicative of true ride times
 ride_sample <- ride_sample[ride_sample$tripduration <11500, ]
 
+##
 ggplot(data = ride_sample) + 
   geom_jitter(mapping = aes(x = start_time, y = tripduration,
     color = usertype))
@@ -91,7 +92,7 @@ ride_sample %>%
   scale_x_discrete(breaks = unique(ride_sample$month))
 
 tibble(ride_sample)
-##discovered a better way to do the month column 
+##discovered a better way to implement the month column 
 ride_sample$month <- as.Date(ride_sample$month)
 ride_sample$month <- format(ride_sample$month, "%B")
 ride_sample$month <- factor(ride_sample$month, levels = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
